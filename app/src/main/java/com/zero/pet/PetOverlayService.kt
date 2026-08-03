@@ -28,11 +28,10 @@ class PetOverlayService : Service() {
         private const val CHANNEL_ID = "pet_overlay_channel"
         private const val NOTIFICATION_ID = 1001
 
-        // 手势判定参数
         private const val CLICK_MAX_MS = 600L
         private const val DOUBLE_CLICK_GAP_MS = 300L
         private const val LONG_PRESS_MS = 600L
-        private const val MOVE_SLOP = 10
+        private const val MOVE_SLOP = 25
         private const val PET_HTML = """<!DOCTYPE html>
 <html>
 <head>
@@ -51,19 +50,30 @@ svg{width:100%;height:100%}
 <div id="pet">
 <div class="bubble" id="bubble">嘿，正数小姐</div>
 <svg viewBox="0 0 200 200">
-<ellipse cx="100" cy="132" rx="55" ry="45" fill="#2a2a3a"/>
-<path d="M100 30 Q110 10 125 15 Q115 22 118 32" stroke="#2a2a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
-<ellipse cx="100" cy="100" rx="48" ry="42" fill="#f5e9e0"/>
-<ellipse cx="84" cy="98" rx="5" ry="6" fill="#333"/>
-<ellipse cx="116" cy="98" rx="5" ry="6" fill="#333"/>
-<path d="M90 115 Q100 122 110 115" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-<ellipse class="blush" cx="72" cy="112" rx="10" ry="6" fill="#ffb3b3"/>
-<ellipse class="blush" cx="128" cy="112" rx="10" ry="6" fill="#ffb3b3"/>
+  <ellipse cx="100" cy="140" rx="62" ry="42" fill="#4A7FB5"/>
+  <ellipse cx="100" cy="148" rx="48" ry="30" fill="#E8F0F8"/>
+  <circle cx="80" cy="128" r="6" fill="#1a1a2e"/>
+  <circle cx="82" cy="126" r="2" fill="#fff"/>
+  <circle cx="120" cy="128" r="6" fill="#1a1a2e"/>
+  <circle cx="122" cy="126" r="2" fill="#fff"/>
+  <ellipse class="blush" cx="66" cy="136" rx="7" ry="4" fill="#FFB3B3"/>
+  <ellipse class="blush" cx="134" cy="136" rx="7" ry="4" fill="#FFB3B3"/>
+  <ellipse cx="100" cy="152" rx="28" ry="18" fill="#D0E4F0"/>
+  <path d="M90 142 Q100 156 110 142" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M38 120 Q10 90 20 70" stroke="#4A7FB5" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M38 120 Q5 100 10 78" stroke="#3570A0" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M162 120 Q190 90 180 70" stroke="#4A7FB5" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M162 120 Q195 100 190 78" stroke="#3570A0" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M70 55 Q85 20 100 25 Q115 20 130 55" stroke="#5B9AD5" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="88" cy="42" rx="4" ry="6" fill="#5B9AD5"/>
+  <ellipse cx="100" cy="35" rx="4" ry="7" fill="#6AADE0"/>
+  <ellipse cx="112" cy="42" rx="4" ry="6" fill="#5B9AD5"/>
+  <ellipse cx="94" cy="48" rx="3" ry="5" fill="#6AADE0"/>
+  <ellipse cx="107" cy="48" rx="3" ry="5" fill="#6AADE0"/>
 </svg>
 </div>
 <script>
 var bubble=document.getElementById("bubble");
-var blush=document.querySelectorAll(".blush");
 var away=false;
 var replies=["嘿，正数小姐","你戳我干嘛","在的呢","今天喝水了吗？","别看屏幕了，看看我"];
 var idles=["…","嗯？","在呢","(￣▽￣)"];
@@ -83,9 +93,10 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
     private var overlayView: View? = null
     private var webView: WebView? = null
 
-    // 手势状态
     private var downX = 0f
     private var downY = 0f
+    private var originalDownX = 0f
+    private var originalDownY = 0f
     private var downTime = 0L
     private var isDragging = false
     private var isLongPressTriggered = false
@@ -165,6 +176,8 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.rawX
                     downY = event.rawY
+                    originalDownX = event.rawX
+                    originalDownY = event.rawY
                     downTime = System.currentTimeMillis()
                     isDragging = false
                     isLongPressTriggered = false
@@ -192,8 +205,11 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
 
                 MotionEvent.ACTION_UP -> {
                     handler.removeCallbacks(longPressRunnable)
+                    val totalDx = Math.abs(event.rawX - originalDownX)
+                    val totalDy = Math.abs(event.rawY - originalDownY)
+                    val hasMoved = totalDx > MOVE_SLOP || totalDy > MOVE_SLOP
                     val elapsed = System.currentTimeMillis() - downTime
-                    if (!isDragging && !isLongPressTriggered) {
+                    if (!hasMoved && !isLongPressTriggered) {
                         if (elapsed < CLICK_MAX_MS) {
                             val now = System.currentTimeMillis()
                             if (now - lastClickTime < DOUBLE_CLICK_GAP_MS) {
