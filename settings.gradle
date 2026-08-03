@@ -1,0 +1,2 @@
+rootProject.name = "ZeroPet"
+include ':app'
