@@ -110,23 +110,23 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "onCreate: service created")
+        Log.i(TAG, "onCreate: service created")
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
-        Log.d(TAG, "onCreate: startForeground done")
+        Log.i(TAG, "onCreate: startForeground done")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand: overlayView=" + if (overlayView == null) "" else "exists")
+        Log.i(TAG, "onStartCommand: overlayView=" + if (overlayView == null) "" else "exists")
         if (overlayView == null) showOverlay()
         return START_STICKY
     }
 
     private fun showOverlay() {
-        Log.d(TAG, "showOverlay: entry")
+        Log.i(TAG, "showOverlay: entry")
         val canDraw = Settings.canDrawOverlays(this)
-        Log.d(TAG, "showOverlay: canDrawOverlays=" + canDraw)
+        Log.i(TAG, "showOverlay: canDrawOverlays=" + canDraw)
         if (!canDraw) { Log.e(TAG, "showOverlay: ABORT — no permission"); return }
         val inflater = LayoutInflater.from(this)
         overlayView = inflater.inflate(R.layout.overlay_pet, null).apply {
@@ -143,9 +143,9 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply { gravity = Gravity.TOP or Gravity.START; x = 300; y = 300 }
-        Log.d(TAG, "showOverlay: about to addView " + params.width + "x" + params.height)
+        Log.i(TAG, "showOverlay: about to addView " + params.width + "x" + params.height)
         windowManager.addView(overlayView, params)
-        Log.d(TAG, "showOverlay: addView SUCCESS")
+        Log.i(TAG, "showOverlay: addView SUCCESS")
     }
 
     private fun setupWebView(wv: WebView) {
@@ -160,12 +160,13 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
     }
 
     private fun setupTouchListener(view: View) {
-        Log.d(TAG, "setupTouchListener: entry")
+        Log.i(TAG, "setupTouchListener: entry")
         view.setOnTouchListener { _, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downX = event.rawX; downY = event.rawY
                     downTime = System.currentTimeMillis()
+                    Log.i(TAG, "ACTION_DOWN: x=${downX}, y=${downY}")
                     isDragging = false; isLongPressTriggered = false
                     handler.postDelayed(longPressRunnable, LONG_PRESS_MS)
                     true
@@ -186,18 +187,22 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
                 MotionEvent.ACTION_UP -> {
                     handler.removeCallbacks(longPressRunnable)
                     val elapsed = System.currentTimeMillis() - downTime
-                    val isQuickTap = elapsed < QUICK_TAP_MAX_MS
-                    if (!isLongPressTriggered && (isQuickTap || !isDragging)) {
-                        if (elapsed < CLICK_MAX_MS) {
-                            val now = System.currentTimeMillis()
-                            if (now - lastClickTime < DOUBLE_CLICK_GAP_MS) {
-                                webView?.evaluateJavascript("window.pet && window.pet.onDoubleClick && window.pet.onDoubleClick();", null)
-                                lastClickTime = 0
-                            } else {
-                                lastClickTime = now
-                                webView?.evaluateJavascript("window.pet && window.pet.onSingleClick && window.pet.onSingleClick();", null)
-                            }
+                    Log.i(TAG, "ACTION_UP: elapsed=${elapsed}ms, isDragging=$isDragging, isLongPress=$isLongPressTriggered, QUICK_MAX=$QUICK_TAP_MAX_MS")
+                    if (!isDragging && !isLongPressTriggered) {
+                        Log.i(TAG, "ACTION_UP: click detected, elapsed=${elapsed}ms")
+                        val now = System.currentTimeMillis()
+                        val gap = now - lastClickTime
+                        if (gap < DOUBLE_CLICK_GAP_MS && lastClickTime > 0) {
+                            Log.i(TAG, "ACTION_UP: double-click triggered, gap=${gap}ms")
+                            webView?.evaluateJavascript("window.pet && window.pet.onDoubleClick && window.pet.onDoubleClick();", null)
+                            lastClickTime = 0
+                        } else {
+                            Log.i(TAG, "ACTION_UP: single-click triggered, gap=${gap}ms, lastClick=$lastClickTime")
+                            lastClickTime = now
+                            webView?.evaluateJavascript("window.pet && window.pet.onSingleClick && window.pet.onSingleClick();", null)
                         }
+                    } else {
+                        Log.i(TAG, "ACTION_UP: click SKIPPED (dragging=$isDragging, longPress=$isLongPressTriggered)")
                     }
                     true
                 }
@@ -208,7 +213,7 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
 
     inner class PetBridge {
         @JavascriptInterface
-        fun log(message: String) { Log.d(TAG, "[pet.js] $message") }
+        fun log(message: String) { Log.i(TAG, "[pet.js] $message") }
     }
 
     private fun createNotificationChannel() {
