@@ -81,7 +81,7 @@ function show(t){bubble.textContent=t;bubble.classList.add("show");setTimeout(fu
 window.pet={
  onSingleClick:function(){if(!away)show(replies[Math.floor(Math.random()*replies.length)]);},
  onDoubleClick:function(){if(!away)show("呜——别戳了！");},
- onLongPress:function(){if(away)return;away=true;document.getElementById("pet").style.transform="rotate(-10deg)";show("哼，不看你了");setTimeout(function(){away=false;document.getElementById("pet").style.transform="rotate(0)";},2000);}
+ onLongPress:function(){if(away)return;away=true;document.getElementById("pet").style.transform="rotate(-10deg)";show("哼，不理你了");setTimeout(function(){away=false;document.getElementById("pet").style.transform="rotate(0)";show("(￣▽￣)");},2000);}
 };
 setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},9000);
 </script>
@@ -132,7 +132,7 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
         overlayView = inflater.inflate(R.layout.overlay_pet, null).apply {
             webView = findViewById(R.id.pet_webview)
             setupWebView(webView!!)
-            setupTouchListener(this)
+            // setupTouchListener will be called from onPageFinished
         }
         val params = WindowManager.LayoutParams(
             220, 280,
@@ -156,6 +156,13 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
             mediaPlaybackRequiresUserGesture = false
         }
         wv.addJavascriptInterface(PetBridge(), "android")
+        wv.webViewClient = object : android.webkit.WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                Log.i(TAG, "WebView onPageFinished — HTML loaded, now enabling touch")
+                overlayView?.let { setupTouchListener(it) }
+            }
+        }
         wv.loadDataWithBaseURL(null, PET_HTML, "text/html", "UTF-8", null)
     }
 
