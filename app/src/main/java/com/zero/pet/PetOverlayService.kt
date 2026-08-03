@@ -160,7 +160,7 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 Log.i(TAG, "WebView onPageFinished — HTML loaded, now enabling touch")
-                overlayView?.let { setupTouchListener(it) }
+                view?.let { setupTouchListener(it) }
             }
         }
         wv.loadDataWithBaseURL(null, PET_HTML, "text/html", "UTF-8", null)
