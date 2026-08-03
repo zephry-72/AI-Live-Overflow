@@ -33,6 +33,50 @@ class PetOverlayService : Service() {
         private const val DOUBLE_CLICK_GAP_MS = 300L
         private const val LONG_PRESS_MS = 600L
         private const val MOVE_SLOP = 10
+        private const val PET_HTML = """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<style>
+body{margin:0;background:transparent;overflow:hidden;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif}
+#pet{width:160px;height:160px;position:relative;user-select:none;-webkit-user-select:none;transition:transform .3s}
+svg{width:100%;height:100%}
+.blush{opacity:0;transition:opacity .5s}
+.bubble{position:absolute;top:-32px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);border-radius:12px;padding:4px 10px;font-size:12px;color:#333;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.12);opacity:0;transition:opacity .3s;z-index:9;pointer-events:none}
+.bubble.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="pet">
+<div class="bubble" id="bubble">嘿，正数小姐</div>
+<svg viewBox="0 0 200 200">
+<ellipse cx="100" cy="132" rx="55" ry="45" fill="#2a2a3a"/>
+<path d="M100 30 Q110 10 125 15 Q115 22 118 32" stroke="#2a2a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="100" cy="100" rx="48" ry="42" fill="#f5e9e0"/>
+<ellipse cx="84" cy="98" rx="5" ry="6" fill="#333"/>
+<ellipse cx="116" cy="98" rx="5" ry="6" fill="#333"/>
+<path d="M90 115 Q100 122 110 115" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<ellipse class="blush" cx="72" cy="112" rx="10" ry="6" fill="#ffb3b3"/>
+<ellipse class="blush" cx="128" cy="112" rx="10" ry="6" fill="#ffb3b3"/>
+</svg>
+</div>
+<script>
+var bubble=document.getElementById("bubble");
+var blush=document.querySelectorAll(".blush");
+var away=false;
+var replies=["嘿，正数小姐","你戳我干嘛","在的呢","今天喝水了吗？","别看屏幕了，看看我"];
+var idles=["…","嗯？","在呢","(￣▽￣)"];
+function show(t){bubble.textContent=t;bubble.classList.add("show");setTimeout(function(){bubble.classList.remove("show");},1600);}
+window.pet={
+ onSingleClick:function(){if(!away)show(replies[Math.floor(Math.random()*replies.length)]);},
+ onDoubleClick:function(){if(!away)show("呜——别戳了！");},
+ onLongPress:function(){if(away)return;away=true;document.getElementById("pet").style.transform="rotate(-10deg)";show("哼，不看你了");setTimeout(function(){away=false;document.getElementById("pet").style.transform="rotate(0)";},2000);}
+};
+setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},9000);
+</script>
+</body>
+</html>"""
     }
 
     private lateinit var windowManager: WindowManager
@@ -112,7 +156,7 @@ class PetOverlayService : Service() {
             mediaPlaybackRequiresUserGesture = false
         }
         wv.addJavascriptInterface(PetBridge(), "android")
-        wv.loadUrl("file:///android_asset/pet.html")
+        wv.loadDataWithBaseURL(null, PET_HTML, "text/html", "UTF-8", null)
     }
 
     private fun setupTouchListener(view: View) {
