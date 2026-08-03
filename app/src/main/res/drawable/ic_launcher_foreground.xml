@@ -4,30 +4,22 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- 黑发 -->
     <path
         android:fillColor="#1A1A2E"
         android:pathData="M54,30 C40,30 30,40 30,52 L30,54 C30,40 40,32 54,32 C68,32 78,40 78,54 L78,52 C78,40 68,30 54,30 Z" />
-    <!-- 脸 -->
     <path
         android:fillColor="#FFE0CC"
         android:pathData="M54,40 C44,40 36,48 36,58 C36,70 44,78 54,78 C64,78 72,70 72,58 C72,48 64,40 54,40 Z" />
-    <!-- 左眼 -->
     <path
         android:fillColor="#1A1A2E"
         android:pathData="M46,58 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
-    <!-- 右眼 -->
     <path
         android:fillColor="#1A1A2E"
         android:pathData="M62,58 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
-    <!-- 腮红左 -->
     <path
-        android:fillColor="#FFB3B3"
-        android:fillColorAlpha="0.6"
+        android:fillColor="#99FFB3B3"
         android:pathData="M42,64 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
-    <!-- 腮红右 -->
     <path
-        android:fillColor="#FFB3B3"
-        android:fillColorAlpha="0.6"
+        android:fillColor="#99FFB3B3"
         android:pathData="M66,64 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" />
 </vector>
