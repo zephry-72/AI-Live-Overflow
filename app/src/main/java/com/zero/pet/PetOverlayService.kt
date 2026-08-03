@@ -110,18 +110,24 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "onCreate: service created")
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
+        Log.d(TAG, "onCreate: startForeground done")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand: overlayView=" + if (overlayView == null) "" else "exists")
         if (overlayView == null) showOverlay()
         return START_STICKY
     }
 
     private fun showOverlay() {
-        if (!Settings.canDrawOverlays(this)) return
+        Log.d(TAG, "showOverlay: entry")
+        val canDraw = Settings.canDrawOverlays(this)
+        Log.d(TAG, "showOverlay: canDrawOverlays=" + canDraw)
+        if (!canDraw) { Log.e(TAG, "showOverlay: ABORT — no permission"); return }
         val inflater = LayoutInflater.from(this)
         overlayView = inflater.inflate(R.layout.overlay_pet, null).apply {
             webView = findViewById(R.id.pet_webview)
@@ -137,8 +143,9 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply { gravity = Gravity.TOP or Gravity.START; x = 300; y = 300 }
+        Log.d(TAG, "showOverlay: about to addView " + params.width + "x" + params.height)
         windowManager.addView(overlayView, params)
-        Log.d(TAG, "overlay added")
+        Log.d(TAG, "showOverlay: addView SUCCESS")
     }
 
     private fun setupWebView(wv: WebView) {
@@ -153,6 +160,7 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
     }
 
     private fun setupTouchListener(view: View) {
+        Log.d(TAG, "setupTouchListener: entry")
         view.setOnTouchListener { _, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
