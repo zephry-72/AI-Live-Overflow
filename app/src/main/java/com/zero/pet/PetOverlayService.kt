@@ -163,6 +163,8 @@ class PetOverlayService : Service() {
                     }
                     true
                 }
+
+                else -> true
             }
         }
     }
