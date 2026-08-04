@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:transparent;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pet-box{position:relative;width:180px;height:200px;display:flex;align-items:center;justify-content:center;transition:transform .15s ease}
+.pet-box.bounce{animation:b .4s ease} .pet-box.wiggle{animation:w .3s ease}
+@keyframes b{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes w{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pet-box svg{width:100%;height:100%}
+.bub{position:absolute;top:-36px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);color:#5a6a7a;padding:5px 10px;border-radius:12px;font:12px/1.4 sans-serif;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s ease;max-width:160px;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.bub.show{opacity:1}
+.bub::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(255,255,255,.92)}
+</style>
+</head>
+<body>
+<div class="pet-box" id="petBox">
+  <svg id="petSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" shape-rendering="crispEdges"></svg>
+  <div class="bub" id="bubble"></div>
+</div>
+<script>
+var body = [
+  [40,30,16,8],[40,38,8,8],[32,46,8,8],[24,54,16,8],[24,62,24,8],[24,70,32,8],
+  [24,78,40,8],[24,86,48,8],[24,94,56,8],[24,102,64,8],[24,110,72,8],[24,118,80,8],
+  [24,126,88,8],[32,134,88,8],[40,142,80,8],[48,150,72,8],[56,158,56,8],[64,166,40,8],
+  [72,174,24,8],[40,22,16,8],[32,22,8,8]
+];
+var S = {
+  base:[[56,78,16,4,'#fff'],[80,90,8,4,'#E8A0A0',.5],[76,102,4,4,'#fff']],
+  happy:[[56,78,16,4,'#fff'],[64,90,8,4,'#FFB6C1',.7],[72,90,4,4,'#FFB6C1',.7],[72,102,4,4,'#fff'],[76,106,4,4,'#fff'],[80,102,4,4,'#fff']],
+  sleep:[[56,82,16,4,'#fff'],[88,46,8,8,'#fff',.9],[96,38,8,8,'#fff',.7],[104,30,8,8,'#fff',.5]],
+  angry:[[48,72,8,4,'#6B7B8B'],[56,68,8,4,'#6B7B8B'],[80,68,8,4,'#6B7B8B'],[88,72,8,4,'#6B7B8B'],[52,78,8,8,'#fff'],[84,78,8,8,'#fff'],[64,96,8,4,'#F88',.6],[76,96,8,4,'#F88',.6],[68,106,12,4,'#fff']],
+  shy:[[56,78,12,4,'#fff'],[60,88,8,8,'#FFB6C1',.8],[68,88,8,8,'#FFB6C1',.8],[64,96,8,4,'#FFB6C1',.8],[72,96,4,4,'#FFB6C1',.8],[72,104,4,4,'#fff']],
+  love:[[54,78,4,4,'#FF6B8A'],[50,74,4,4,'#FF6B8A'],[58,74,4,4,'#FF6B8A'],[66,78,4,4,'#FF6B8A'],[62,74,4,4,'#FF6B8A'],[70,74,4,4,'#FF6B8A'],[64,94,8,4,'#FFB6C1',.8],[76,94,8,4,'#FFB6C1',.8],[76,102,4,4,'#fff'],[80,100,4,4,'#fff']],
+  surprised:[[52,76,12,12,'#fff'],[54,80,8,4,'#A8B8C8'],[76,104,8,8,'#fff'],[78,106,4,4,'#A8B8C8'],[92,46,4,8,'#fff',.8],[92,58,4,4,'#fff',.8]]
+};
+function buildSvg(key) {
+  var r = body.map(function(b) { return '<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="'+b[3]+'" fill="#A8B8C8"/>'; }).join('');
+  (S[key]||[]).forEach(function(b) {
+    var clr = typeof b[3]==='string' ? b[3] : '#A8B8C8';
+    var op = b[4] ? ' opacity="'+b[4]+'"' : '';
+    r += '<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="'+b[3]+'" fill="'+clr+'"'+op+'/>';
+  });
+  return r;
+}
+var cur = 'base';
+document.getElementById('petSvg').innerHTML = buildSvg('base');
+var bub = document.getElementById('bubble');
+var bubTimer = null;
+function showBubble(text, dur) {
+  if (!text) return;
+  bub.textContent = text;
+  bub.classList.add('show');
+  clearTimeout(bubTimer);
+  bubTimer = setTimeout(function(){ bub.classList.remove('show'); }, dur || 3000);
+}
+window.petEngine = {
+  setEmotion: function(key) { if (S[key]) { cur = key; document.getElementById('petSvg').innerHTML = buildSvg(key); } },
+  say: function(text, dur) { showBubble(text, dur); },
+  onTap: function() {
+    var petBox = document.getElementById('petBox');
+    petBox.classList.add('bounce');
+    setTimeout(function(){ petBox.classList.remove('bounce'); }, 400);
+    window.petEngine._notifyHost && window.petEngine._notifyHost('tap', cur);
+  },
+  onDoubleTap: function() {
+    var petBox = document.getElementById('petBox');
+    petBox.classList.add('wiggle');
+    setTimeout(function(){ petBox.classList.remove('wiggle'); }, 300);
+    window.petEngine._notifyHost && window.petEngine._notifyHost('doubleTap', cur);
+  },
+  onLongPress: function() {
+    window.petEngine._notifyHost && window.petEngine._notifyHost('longPress', cur);
+  },
+  _notifyHost: null
+};
+</script>
+</body>
+</html>
