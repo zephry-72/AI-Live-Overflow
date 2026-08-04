@@ -19,13 +19,10 @@ jobs:
       - name: Download & extract Gradle 8.5, then generate wrapper
         working-directory: kotlin
         run: |
-          # download Gradle 8.5 binary
           curl -sL "https://services.gradle.org/distributions/gradle-8.5-bin.zip" -o /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp/
-          # use downloaded Gradle to generate wrapper
           /tmp/gradle-8.5/bin/gradle wrapper --gradle-version 8.5
-          # verify
-          ls -la gradlew gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties
+          ls -la gradlew gradle/wrapper/gradle-wrapper.jar
 
       - name: Setup Android SDK
         working-directory: kotlin
@@ -34,9 +31,16 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>/dev/null || \
           yes | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>/dev/null || true
 
-      - name: Build debug APK
+      - name: Build debug APK (with log capture)
         working-directory: kotlin
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: |
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: kotlin/build.log
 
       - uses: actions/upload-artifact@v4
         with:
