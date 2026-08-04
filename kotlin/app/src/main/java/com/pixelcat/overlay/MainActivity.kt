@@ -24,7 +24,7 @@ class MainActivity : Activity() {
         }
 
         val title = TextView(this).apply {
-            text = "\uD83D\uDC31 Pixel Cat"
+            text = "🐱 Pixel Cat"
             textSize = 24f
             setTextColor(Color.argb(0xFF, 0xA8, 0xB8, 0xC8))
             setPadding(0, 0, 0, 20)
@@ -32,7 +32,7 @@ class MainActivity : Activity() {
         layout.addView(title)
 
         val desc = TextView(this).apply {
-            text = "\u8BA9\u50CF\u7D20\u732B\u54AA\u6D6E\u5728\u4F60\u7684\u5C4F\u5E55\u4E0A\uFF5E"
+            text = "让像素猫咪浮在你的屏幕上～"
             textSize = 14f
             setTextColor(Color.argb(0xCC, 0x8A, 0x9A, 0xAA))
             setPadding(0, 0, 0, 40)
@@ -40,13 +40,13 @@ class MainActivity : Activity() {
         layout.addView(desc)
 
         val btnStart = Button(this).apply {
-            text = "\u53EC\u5524\u732B\u54AA \u2728"
+            text = "召唤猫咪 ✨"
             setOnClickListener { onStartService() }
         }
         layout.addView(btnStart)
 
         val btnStop = Button(this).apply {
-            text = "\u6536\u8D77\u732B\u54AA"
+            text = "收起猫咪"
             setOnClickListener { onStopService() }
             setPadding(0, 20, 0, 0)
         }
@@ -62,7 +62,7 @@ class MainActivity : Activity() {
     private fun onStartService() {
         if (!hasOverlayPermission()) {
             requestOverlayPermission()
-            Toast.makeText(this, "\u8BF7\u5148\u6388\u4E88\u60AC\u6D6E\u7A97\u6743\u9650", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "请先授予悬浮窗权限", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -78,7 +78,7 @@ class MainActivity : Activity() {
     private fun onStopService() {
         val intent = Intent(this, PetOverlayService::class.java)
         stopService(intent)
-        Toast.makeText(this, "\u732B\u54AA\u5DF2\u6536\u8D77\uFF5E", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "猫咪已收起～", Toast.LENGTH_SHORT).show()
     }
 
     private fun hasOverlayPermission(): Boolean =
