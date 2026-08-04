@@ -2,6 +2,7 @@ package com.pixelcat.overlay
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,33 +20,33 @@ class MainActivity : Activity() {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(40, 80, 40, 40)
-            setBackgroundColor(0xAA_2A2A3A.toInt())
+            setBackgroundColor(Color.argb(0xAA, 0x2A, 0x2A, 0x3A))
         }
 
         val title = TextView(this).apply {
-            text = "🐱 Pixel Cat"
+            text = "\uD83D\uDC31 Pixel Cat"
             textSize = 24f
-            setTextColor(0xFF_A8B8C8.toInt())
+            setTextColor(Color.argb(0xFF, 0xA8, 0xB8, 0xC8))
             setPadding(0, 0, 0, 20)
         }
         layout.addView(title)
 
         val desc = TextView(this).apply {
-            text = "让像素猫咪浮在你的屏幕上～"
+            text = "\u8BA9\u50CF\u7D20\u732B\u54AA\u6D6E\u5728\u4F60\u7684\u5C4F\u5E55\u4E0A\uFF5E"
             textSize = 14f
-            setTextColor(0xCC_8A9AAA.toInt())
+            setTextColor(Color.argb(0xCC, 0x8A, 0x9A, 0xAA))
             setPadding(0, 0, 0, 40)
         }
         layout.addView(desc)
 
         val btnStart = Button(this).apply {
-            text = "召唤猫咪 ✨"
+            text = "\u53EC\u5524\u732B\u54AA \u2728"
             setOnClickListener { onStartService() }
         }
         layout.addView(btnStart)
 
         val btnStop = Button(this).apply {
-            text = "收起猫咪"
+            text = "\u6536\u8D77\u732B\u54AA"
             setOnClickListener { onStopService() }
             setPadding(0, 20, 0, 0)
         }
@@ -61,7 +62,7 @@ class MainActivity : Activity() {
     private fun onStartService() {
         if (!hasOverlayPermission()) {
             requestOverlayPermission()
-            Toast.makeText(this, "请先授予悬浮窗权限", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "\u8BF7\u5148\u6388\u4E88\u60AC\u6D6E\u7A97\u6743\u9650", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -77,7 +78,7 @@ class MainActivity : Activity() {
     private fun onStopService() {
         val intent = Intent(this, PetOverlayService::class.java)
         stopService(intent)
-        Toast.makeText(this, "猫咪已收起～", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "\u732B\u54AA\u5DF2\u6536\u8D77\uFF5E", Toast.LENGTH_SHORT).show()
     }
 
     private fun hasOverlayPermission(): Boolean =
