@@ -17,13 +17,13 @@
         android:allowBackup="true"
         android:label="PixelCat"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Transparent"
+        android:theme="@style/Theme.AppCompat.Translucent.NoActionBar"
         android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Transparent">
+            android:theme="@style/Theme.AppCompat.Translucent.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
