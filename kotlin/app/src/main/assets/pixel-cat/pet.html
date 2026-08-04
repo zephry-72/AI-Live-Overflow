@@ -5,145 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Pixel Cat</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    width: 100%; height: 100%;
-    background: transparent;
-    overflow: hidden;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  #container {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-  }
-  #cat-image {
-    width: 100%; height: 100%;
-    object-fit: contain;
-    pointer-events: none;
-  }
-  #bubble {
-    position: absolute;
-    top: -36px; left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255,255,255,0.92);
-    color: #333;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.25s;
-    pointer-events: none;
-    font-family: sans-serif;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
-  }
-  #bubble.show { opacity: 1; }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:transparent;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#container{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+#cat-image{width:100%;height:100%;object-fit:contain;pointer-events:none}
+#bubble{position:absolute;top:-36px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);color:#333;font-size:11px;padding:4px 10px;border-radius:12px;white-space:nowrap;opacity:0;transition:opacity 0.25s;pointer-events:none;font-family:sans-serif;box-shadow:0 1px 4px rgba(0,0,0,0.12)}
+#bubble.show{opacity:1}
 </style>
 </head>
 <body>
 <div id="container">
-  <img id="cat-image" src="base-cat.svg" alt="pixel cat">
-  <div id="bubble"></div>
+<img id="cat-image" src="base-cat.svg" alt="pixel cat">
+<div id="bubble"></div>
 </div>
-
 <script>
-// ES5 兼容语法
-var catImg = document.getElementById('cat-image');
-var bubble = document.getElementById('bubble');
-var container = document.getElementById('container');
-
-var emotions = {
-  base: 'base-cat.svg',
-  happy: 'cat-happy.svg',
-  sleep: 'cat-sleep.svg',
-  angry: 'cat-angry.svg',
-  shy: 'cat-shy.svg',
-  love: 'cat-love.svg',
-  surprised: 'cat-surprised.svg'
-};
-
-var currentEmotion = 'base';
+var catImg=document.getElementById('cat-image');
+var bubble=document.getElementById('bubble');
+var container=document.getElementById('container');
+var emotions={base:'base-cat.svg',happy:'cat-happy.svg',sleep:'cat-sleep.svg',angry:'cat-angry.svg',shy:'cat-shy.svg',love:'cat-love.svg',surprised:'cat-surprised.svg'};
+var currentEmotion='base';
 var bubTimer = null;
-
-function showBubble(text, duration) {
-  if (bubTimer !== null) { clearTimeout(bubTimer); bubTimer = null; }
-  if (!text) { bubble.classList.remove('show'); return; }
-  bubble.textContent = text;
-  bubble.classList.add('show');
-  if (duration && duration > 0) {
-    bubTimer = setTimeout(function() {
-      bubble.classList.remove('show');
-      bubTimer = null;
-    }, duration);
-  }
+function showBubble(text,duration){
+if (bubTimer !== null) { clearTimeout(bubTimer); bubTimer = null; }
+if (!text) { bubble.classList.remove('show'); return; }
+bubble.textContent = text; bubble.classList.add('show');
+if (duration && duration > 0) {
+  bubTimer = setTimeout(function() { bubble.classList.remove('show'); bubTimer = null; }, duration);
 }
-
-var startX = 0, startY = 0, startTime = 0;
-var held = false;
-var longPressTimer = null;
-var moved = false;
-
-container.addEventListener('touchstart', function(e) {
-  if (e.touches.length !== 1) return;
-  var t = e.touches[0];
-  startX = t.clientX; startY = t.clientY;
-  startTime = Date.now();
-  moved = false; held = false;
-  if (longPressTimer !== null) clearTimeout(longPressTimer);
-  longPressTimer = setTimeout(function() {
-    held = true;
-    longPressTimer = null;
-    _notifyHost('longPress', currentEmotion);
-  }, 500);
-}, { passive: false });
-
-container.addEventListener('touchmove', function(e) {
-  if (e.touches.length !== 1) return;
-  var dx = e.touches[0].clientX - startX;
-  var dy = e.touches[0].clientY - startY;
-  if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-    moved = true;
-    if (longPressTimer !== null) { clearTimeout(longPressTimer); longPressTimer = null; }
-  }
-}, { passive: false });
-
-container.addEventListener('touchend', function(e) {
-  if (longPressTimer !== null) { clearTimeout(longPressTimer); longPressTimer = null; }
-  if (held) return;
-  var dt = Date.now() - startTime;
-  if (dt < 300 && !moved) {
-    _notifyHost('tap', currentEmotion);
-  } else if (dt >= 300 && !moved) {
-    _notifyHost('longPress', currentEmotion);
-  }
-});
-
-container.addEventListener('dblclick', function(e) {
-  _notifyHost('doubleTap', currentEmotion);
-});
-
-function _notifyHost(action, cur) {
-  if (window.petHost && typeof window.petHost.onEvent === 'function') {
-    window.petHost.onEvent(JSON.stringify({ action: action, emotion: cur }));
-  }
 }
-
-window.petEngine = {
-  setEmotion: function(key) {
-    var src = emotions[key];
-    if (src && catImg) {
-      catImg.src = src;
-      currentEmotion = key;
-    }
-  },
-  say: function(text, dur) { showBubble(text, dur || 2000); },
-  onTap: function() { _notifyHost('tap', currentEmotion); },
-  onDoubleTap: function() { _notifyHost('doubleTap', currentEmotion); },
-  onLongPress: function() { _notifyHost('longPress', currentEmotion); },
-  _notifyHost: null
+var startX=0,startY=0,startTime=0,held=false,longPressTimer=,moved=false;
+container.addEventListener('touchstart',function(e){
+if (e.touches.length !== 1) return;
+var t=e.touches[0]; startX=t.clientX; startY=t.clientY; startTime=Date.now(); moved=false; held=false;
+if (longPressTimer !== null) clearTimeout(longPressTimer);
+longPressTimer=setTimeout(function(){ held=true; longPressTimer=; _notifyHost('longPress',currentEmotion); },500);
+},{passive:false});
+container.addEventListener('touchmove',function(e){
+if (e.touches.length !== 1) return;
+var dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY;
+if (Math.abs(dx)>8 || Math.abs(dy)>8) { moved=true; if (longPressTimer!==){ clearTimeout(longPressTimer); longPressTimer=; } }
+},{passive:false});
+container.addEventListener('touchend',function(e){
+if (longPressTimer !== null) { clearTimeout(longPressTimer); longPressTimer = null; }
+if (held) return;
+var dt=Date.now()-startTime;
+if (dt<300 && !moved) { _notifyHost('tap',currentEmotion); }
+else if (dt>=300 && !moved) { _notifyHost('longPress',currentEmotion); }
+});
+container.addEventListener('dblclick',function(e){ _notifyHost('doubleTap',currentEmotion); });
+function _notifyHost(action,cur){
+if (window.petHost && typeof window.petHost.onEvent === 'function') {
+  window.petHost.onEvent(JSON.stringify({ action: action, emotion: cur }));
+}
+}
+window.petEngine={
+setEmotion: function(key) { var src=emotions[key]; if (src && catImg) { catImg.src=src; currentEmotion=key; } },
+say: function(text,dur) { showBubble(text, dur || 2000); },
+onTap: function() { _notifyHost('tap',currentEmotion); },
+onDoubleTap: function() { _notifyHost('doubleTap',currentEmotion); },
+onLongPress: function() { _notifyHost('longPress',currentEmotion); }
 };
 </script>
 </body>
