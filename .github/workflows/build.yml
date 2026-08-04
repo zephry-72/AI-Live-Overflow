@@ -16,15 +16,22 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
+      - name: Setup Android SDK & Gradle wrapper
+        working-directory: kotlin
         run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" 2>/dev/null || true
-          # fallback: use pre-installed sdk
+          # set local.properties
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          # install required SDK components (ubuntu-latest has cmdline-tools pre-installed)
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>/dev/null || \
           yes | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" 2>/dev/null || true
+          # generate gradle wrapper to lock version 8.5
+          gradle wrapper --gradle-version 8.5
+          # verify wrapper exists
+          ls -la gradlew
 
       - name: Build debug APK
         working-directory: kotlin
-        run: gradle assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
