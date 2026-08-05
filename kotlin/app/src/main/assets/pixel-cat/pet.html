@@ -61,8 +61,8 @@ if (window.petHost && typeof window.petHost.onEvent === 'function') {
 window.petEngine={
 setEmotion: function(key) { var src=emotions[key]; if (src && catImg) { catImg.src=src; currentEmotion=key; } },
 say: function(text,dur) { showBubble(text, dur || 2000); },
-onTap: function() { _notifyHost('tap',currentEmotion); },
-onDoubleTap: function() { _notifyHost('doubleTap',currentEmotion); },
+onTap: function() { var msgs=['喵~','戳我干嘛！','🐱','别闹~','哼！','喵呜~','干嘛呀','嗷呜～','摸我头了吗','再戳一下试试']; showBubble(msgs[Math.floor(Math.random()*msgs.length)],1500); _notifyHost('tap',currentEmotion); },
+onDoubleTap: function() { var msgs=['喵喵！！','双击暴击！','🐱🐱','兴奋！','嗷嗷～','喜欢！']; showBubble(msgs[Math.floor(Math.random()*msgs.length)],1800); _notifyHost('doubleTap',currentEmotion); },
 onLongPress: function() { _notifyHost('longPress',currentEmotion); }
 };
 </script>
