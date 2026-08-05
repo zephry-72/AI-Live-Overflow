@@ -108,7 +108,6 @@ class PetOverlayService : Service() {
     private fun setupWebView() {
         webView = WebView(this).apply {
             setBackgroundColor(0x00000000)
-            isOpaque = false
             settings.apply {
                 javaScriptEnabled = true
                 allowFileAccess = true
