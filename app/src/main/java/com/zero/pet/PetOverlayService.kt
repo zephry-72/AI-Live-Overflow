@@ -132,7 +132,8 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
         overlayView = inflater.inflate(R.layout.overlay_pet, null).apply {
             webView = findViewById(R.id.pet_webview)
             setupWebView(webView!!)
-            // setupTouchListener will be called from onPageFinished
+            // FIX: register touch listener immediately — some ROMs never call onPageFinished, which killed all taps
+            setupTouchListener(webView!!)
         }
         val params = WindowManager.LayoutParams(
             220, 280,
@@ -159,7 +160,7 @@ setInterval(function(){show(idles[Math.floor(Math.random()*idles.length)]);},900
         wv.webViewClient = object : android.webkit.WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                Log.i(TAG, "WebView onPageFinished — HTML loaded, now enabling touch")
+                Log.i(TAG, "WebView onPageFinished — fallback: re-set touch listener (already set at showOverlay)")
                 view?.let { setupTouchListener(it) }
             }
         }
